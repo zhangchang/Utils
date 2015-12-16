@@ -14,12 +14,7 @@ public class Sudoku {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
-		//test
-		int[] aa = {1,4,8};
-		//System.out.println((9-1)/N*N+1);
-		//System.out.println(((9-1)/N+1)*N);
-		
-		//initSudokuArray();
+
 		boolean result = false;
 		
 		for (int i=0;i<1000;i++) {
