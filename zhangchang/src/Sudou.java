@@ -292,7 +292,7 @@ public class Sudou {
             } else {
                 // 返回指定格格中，第几个解
                 layout[curPos] = getAnswerNum(curPos, ansPosArr[curPos]);
-                 System.out.println("位置："+curPos+"　填写："+layout[curPos]);
+                 //System.out.println("位置："+curPos+"　填写："+layout[curPos]);
                 ansPosArr[curPos]++;
                 curPos++;
             }
