@@ -16,7 +16,7 @@ public class Sudou {
 	 * @param args
 	 */
 
-	public static int N = 20;
+	public static int N = 4;
 
 	public static void main(String[] args) {
 		Sudou sd = new Sudou(N * N);
@@ -33,12 +33,12 @@ public class Sudou {
 	}
 
 	private int fieldNum;
-	private byte[] layout = null;// 布局
-	private byte[] outbytes = null;
+	private int[] layout = null;// 布局
+	private int[] outbytes = null;
 	private int curPos;// 当前处理的布局位置
 	private Random random = new Random();
-	private byte[] ansPosArr = null;// 每个布局位置解空间使用标识（指向下一次要处理的解）
-	private byte[][] ansArr = null;// 记录每个位置的解空间
+	private int[] ansPosArr = null;// 每个布局位置解空间使用标识（指向下一次要处理的解）
+	private int[][] ansArr = null;// 记录每个位置的解空间
 	private boolean randomLayout = false;
 
 	public void setRandomLayout(boolean r) {
@@ -49,14 +49,14 @@ public class Sudou {
 		curPos = 0;
 		fieldNum = num;
 		if (layout == null)
-			layout = new byte[num * num];
+			layout = new int[num * num];
 		if (outbytes == null)
-			outbytes = new byte[(num * num + 1) / 2];
+			outbytes = new int[(num * num + 1) / 2];
 		if (ansPosArr == null)
-			ansPosArr = new byte[num * num];
+			ansPosArr = new int[num * num];
 		// 用来记录布局中某个位置的可能解
 		if (ansArr == null)
-			ansArr = new byte[num * num][num];
+			ansArr = new int[num * num][num];
 		for (int i = 0; i < num * num; i++) {
 			layout[i] = -1;// 将布局全部设置为未填状态
 			ansPosArr[i] = 0;// 用来记录解的位置，回溯时从这个位置往后处理
@@ -121,7 +121,8 @@ public class Sudou {
 			bEven = !bEven;
 		}
 		try {
-			fos.write(outbytes);
+			//TODO:fix
+			//fos.write(outbytes);
 		} catch (Exception e) {
 		}
 	}
@@ -180,7 +181,7 @@ public class Sudou {
 	 */
 	private void dealAnswer(int pos) {
 		// 随机调整一下顺序
-		List<Byte> list = new LinkedList<Byte>();
+		List<Integer> list = new LinkedList<Integer>();
 		for (int i = 0; i < fieldNum; i++)
 			list.add(ansArr[pos][i]);
 		int rdm = 0, idx = 0;
@@ -223,7 +224,7 @@ public class Sudou {
 	 * @param ansPos
 	 * @return
 	 */
-	private byte getAnswerNum(int fieldPos, int ansPos) {
+	private int getAnswerNum(int fieldPos, int ansPos) {
 		// 返回指定布局方格中指定位置的解
 		int cnt = 0;
 		for (int i = 0; i < fieldNum; i++) {
