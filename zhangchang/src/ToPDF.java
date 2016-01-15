@@ -8,23 +8,35 @@ import com.itextpdf.text.DocumentException;
 public class ToPDF {
 	public static void main(String[] args) throws MalformedURLException, IOException, DocumentException {
 		// TODO Auto-generated method stub
-		ArrayList<String> imageUrllist = new ArrayList<String>();
+		String rootPath = "D:\\电子书\\已完成";
 		
-		ImageUtils im = new ImageUtils();
+		File root = new File(rootPath);
+		File[] files = root.listFiles();
 		
-		im.getFiles("D:\\test");
-		
-		imageUrllist = im.fileList;
-		//imageUrllist.add("D:\\test\\SNAG-0000.png");
-		//imageUrllist.add("D:\\test\\SNAG-0001.png");
-		//imageUrllist.add("D:\\test\\SNAG-0002.png");
-		String pdfUrl = "D:\\test2\\test.pdf";
-		File file = PdfManager.Pdf(imageUrllist, pdfUrl);
-		try {
-			file.createNewFile();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		for(File file:files) {
+			if(file.isDirectory()){
+				ArrayList<String> imageUrllist = new ArrayList<String>();
+				
+				ImageUtils im = new ImageUtils();
+				
+				im.fileList = new ArrayList<String>();
+				
+				im.getFiles(file.getAbsolutePath());
+				im.sortFileList();
+				
+				imageUrllist = im.fileList;
+				String pdfUrl = root + "\\" + file.getName() + ".pdf";
+				File pdffile = PdfManager.Pdf(imageUrllist, pdfUrl);
+				try {
+					pdffile.createNewFile();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
 		}
+		
+
 	}
 }

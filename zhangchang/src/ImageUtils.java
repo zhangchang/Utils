@@ -13,10 +13,11 @@ import java.awt.image.ColorConvertOp;
 import java.awt.image.CropImageFilter;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
+import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
@@ -81,12 +82,34 @@ public class ImageUtils {
 				
 		*/
 		
-		if (args.length == 4) {
-			Integer w = new Integer(args[2]);
-			Integer h = new Integer(args[3]);
-			imageBatchCut(args[0], args[1], w.intValue(), h.intValue(), IMAGE_TYPE_PNG);
-		} else {
-			imageBatchCut(args[0], args[1], DEFAULT_WIDTH, DEFAULT_HEIGHT, IMAGE_TYPE_PNG);
+//		if (args.length == 4) {
+//			Integer w = new Integer(args[2]);
+//			Integer h = new Integer(args[3]);
+//			imageBatchCut(args[0], args[1], w.intValue(), h.intValue(), IMAGE_TYPE_PNG);
+//		} else {
+//			imageBatchCut(args[0], args[1], IMAGE_TYPE_PNG);
+//		}
+		
+		String srcPath = "D:\\电子书\\处理中";
+		String tagPath = "D:\\电子书\\已完成";
+		String srcFolder = "";
+		String tagFolder = "";
+		
+		File root = new File(srcPath);
+		File newDir = null;
+		File[] files = root.listFiles();
+		
+		for(File file:files) {
+			if(file.isDirectory()){
+				srcFolder = srcPath + "\\" +file.getName();
+				tagFolder = tagPath + "\\" +file.getName();
+				newDir = new File(tagFolder);
+				newDir.mkdirs();
+				System.out.println(srcFolder);
+				System.out.println(tagFolder);
+				imageBatchCut(srcFolder, tagFolder, IMAGE_TYPE_PNG);
+			}
+			
 		}
 		
 		
@@ -95,13 +118,33 @@ public class ImageUtils {
 	public static void imageBatchCut(String srcFolder, String targetFolder, int width, int height, String formatName) {
 		
 		getFiles(srcFolder);
-		
+		//sortFileList();
 		for (String imgFile : fileList) {
 			
 			String targetImgFileName = targetFolder + "\\" + imgFile.substring(imgFile.lastIndexOf("\\")+1);
 			//System.out.println(targetImgFileName);
 			ImageUtils.cut(imgFile, targetImgFileName, 0, 0, width, height, formatName);
 		}
+	}
+	
+	public static void imageBatchCut(String srcFolder, String targetFolder, String formatName) {
+		
+		getFiles(srcFolder);
+		String firstImg = fileList.get(0);
+		fileList = new ArrayList<String>();
+		
+		BufferedImage src;
+		try {
+			src = ImageIO.read(new File(firstImg));
+			int width = src.getWidth(); // 得到源图宽
+			int height = src.getHeight() - 48; // 得到源图长
+			
+			imageBatchCut(srcFolder, targetFolder, width, height, formatName);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 	
 	public static void getFiles(String folder) {
@@ -119,6 +162,35 @@ public class ImageUtils {
 				//System.out.println(file.getAbsolutePath());
 			}
 		}
+		
+	}
+	
+	public static void sortFileList() {
+		
+		String prefix = "screenshot_";
+		HashMap<Integer, String> mp = new HashMap<Integer, String>();
+		ArrayList<String> tmpFileList = new ArrayList<String>();
+		Integer maxKey = new Integer(0);
+		Integer tmpKey = new Integer(0);
+		int strLen = 0;
+		
+		for (String tmp: fileList) {
+			strLen = tmp.substring(tmp.indexOf(prefix)+prefix.length()).length();
+			tmpKey = new Integer(tmp.substring(tmp.indexOf(prefix)+prefix.length()).substring(0, strLen-4));
+			mp.put(tmpKey, tmp);
+			if (tmpKey.compareTo(maxKey)>0) {
+				maxKey = new Integer(tmpKey);
+			}
+		}
+		
+		for (int i = 0;i<maxKey.intValue();i++) {
+			if (mp.containsKey(new Integer(i+1))) {
+				tmpFileList.add(mp.get(new Integer(i+1)));
+			}
+		}
+		
+		fileList = tmpFileList;
+		
 		
 	}
 
@@ -247,24 +319,31 @@ public class ImageUtils {
 			int srcWidth = bi.getWidth(); // 源图宽度
 			int srcHeight = bi.getHeight(); // 源图高度
 			if (srcWidth > 0 && srcHeight > 0) {
-				Image image = bi.getScaledInstance(srcWidth, srcHeight,
-						Image.SCALE_FAST);
+				
+				Image image = bi.getScaledInstance(srcWidth, srcHeight,Image.SCALE_FAST);
 				// 四个参数分别为图像起点坐标和宽高
 				// 即: CropImageFilter(int x,int y,int width,int height)
-				ImageFilter cropFilter = new CropImageFilter(x, y, width,
-						height);// 用于裁剪图像的 ImageFilter 类。此类扩展了基本 ImageFilter
-								// 类，可提取现有 Image 中的给定矩形区域，为包含刚提取区域的新图像提供源。也就是它要与
-								// FilteredImageSource 对象结合使用，以生成现有图像的裁剪版本。
-				Image img = Toolkit.getDefaultToolkit().createImage(
-						new FilteredImageSource(image.getSource(), cropFilter));
-				BufferedImage tag = new BufferedImage(width, height,
-						BufferedImage.TYPE_INT_RGB);
+				ImageFilter cropFilter = new CropImageFilter(x, y, width, height);
+
+				// 用于裁剪图像的 ImageFilter 类。此类扩展了基本 ImageFilter
+				// 类，可提取现有 Image 中的给定矩形区域，为包含刚提取区域的新图像提供源。也就是它要与
+				// FilteredImageSource 对象结合使用，以生成现有图像的裁剪版本。
+				Image img = Toolkit.getDefaultToolkit().createImage(new FilteredImageSource(image.getSource(), cropFilter));
+				BufferedImage tag = new BufferedImage(width, height,BufferedImage.TYPE_INT_RGB);
 				Graphics g = tag.getGraphics();
 				g.drawImage(img, 0, 0, width, height, null); // 绘制切割后的图
 				//g.drawImage(img, 0, 0, srcWidth, srcHeight, null); // 绘制切割后的图
 				g.dispose();
 				// 输出为文件
 				ImageIO.write(tag, formatName, new File(result));
+				
+				
+				/*
+				//-----------------new-----------------//
+				Image newImg = bi.getSubimage(0, 0, width, height);
+				ImageIO.write((RenderedImage) newImg, IMAGE_TYPE_PNG, new File(result));
+				//-----------------new-----------------//
+				*/
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
