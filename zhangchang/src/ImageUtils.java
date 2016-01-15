@@ -35,10 +35,22 @@ public class ImageUtils {
 	public static String IMAGE_TYPE_PNG = "png";// 可移植网络图形
 	public static String IMAGE_TYPE_PSD = "psd";// Photoshop的专用格式Photoshop
 	
-	static ArrayList<String> fileList = new ArrayList<String>();
+	
+	
+	public String srcPath;
+	public String tagPath;
 	
 	static int DEFAULT_WIDTH = 720;
 	static int DEFAULT_HEIGHT = 1280;
+	
+	public ImageUtils() {
+		;
+	}
+	
+	public ImageUtils(String srcDir,String tarDir) {
+		srcPath = srcDir;
+		tagPath = tarDir;
+	}
 
 	/**
 	 * 程序入口：用于测试
@@ -90,8 +102,15 @@ public class ImageUtils {
 //			imageBatchCut(args[0], args[1], IMAGE_TYPE_PNG);
 //		}
 		
-		String srcPath = "D:\\电子书\\处理中";
-		String tagPath = "D:\\电子书\\已完成";
+//		String srcPath = "D:\\电子书\\处理中";
+//		String tagPath = "D:\\电子书\\已完成";
+
+		
+		
+	}
+	
+	public void imageFolderAutoCut() {
+		
 		String srcFolder = "";
 		String tagFolder = "";
 		
@@ -111,13 +130,15 @@ public class ImageUtils {
 			}
 			
 		}
-		
-		
 	}
 	
-	public static void imageBatchCut(String srcFolder, String targetFolder, int width, int height, String formatName) {
-		
-		getFiles(srcFolder);
+	public void imageAutoCut() {
+		imageBatchCut(srcPath, tagPath, IMAGE_TYPE_PNG);
+	}
+	
+	public void imageBatchCut(String srcFolder, String targetFolder, int width, int height, String formatName) {
+		ArrayList<String> fileList = getFiles(srcFolder);
+		//getFiles(srcFolder);
 		//sortFileList();
 		for (String imgFile : fileList) {
 			
@@ -127,9 +148,9 @@ public class ImageUtils {
 		}
 	}
 	
-	public static void imageBatchCut(String srcFolder, String targetFolder, String formatName) {
-		
-		getFiles(srcFolder);
+	public void imageBatchCut(String srcFolder, String targetFolder, String formatName) {
+		ArrayList<String> fileList = getFiles(srcFolder);
+		//getFiles(srcFolder);
 		String firstImg = fileList.get(0);
 		fileList = new ArrayList<String>();
 		
@@ -147,8 +168,9 @@ public class ImageUtils {
 
 	}
 	
-	public static void getFiles(String folder) {
+	public ArrayList<String> getFiles(String folder) {
 
+		ArrayList<String> fileList = new ArrayList<String>();
 		
 		File root = new File(folder);
 		File[] files = root.listFiles();
@@ -163,9 +185,13 @@ public class ImageUtils {
 			}
 		}
 		
+		return fileList;
+		
 	}
 	
-	public static void sortFileList() {
+	public ArrayList<String> sortFileList(String folder) {
+		
+		ArrayList<String> fileList = getFiles(folder);
 		
 		String prefix = "screenshot_";
 		HashMap<Integer, String> mp = new HashMap<Integer, String>();
@@ -191,6 +217,7 @@ public class ImageUtils {
 		
 		fileList = tmpFileList;
 		
+		return fileList;
 		
 	}
 
@@ -206,7 +233,7 @@ public class ImageUtils {
 	 * @param flag
 	 *            缩放选择:true 放大; false 缩小;
 	 */
-	public final static void scale(String srcImageFile, String result,
+	public final void scale(String srcImageFile, String result,
 			int scale, boolean flag, String formatName) {
 		try {
 			BufferedImage src = ImageIO.read(new File(srcImageFile)); // 读入文件
@@ -247,7 +274,7 @@ public class ImageUtils {
 	 *            比例不对时是否需要补白：true为补白; false为不补白;
 	 */
 	@SuppressWarnings("static-access")
-	public final static void scale2(String srcImageFile, String result,
+	public final void scale2(String srcImageFile, String result,
 			int height, int width, boolean bb, String formatName ) {
 		try {
 			double ratio = 0.0; // 缩放比例
@@ -362,7 +389,7 @@ public class ImageUtils {
 	 * @param cols
 	 *            目标切片列数。默认2，必须是范围 [1, 20] 之内
 	 */
-	public final static void cut2(String srcImageFile, String descDir,
+	public final void cut2(String srcImageFile, String descDir,
 			int rows, int cols, String formatName) {
 		try {
 			if (rows <= 0 || rows > 20)
@@ -430,7 +457,7 @@ public class ImageUtils {
 	 * @param destHeight
 	 *            目标切片高度。默认150
 	 */
-	public final static void cut3(String srcImageFile, String descDir,
+	public final void cut3(String srcImageFile, String descDir,
 			int destWidth, int destHeight, String formatName) {
 		try {
 			if (destWidth <= 0)
@@ -496,7 +523,7 @@ public class ImageUtils {
 	 * @param destImageFile
 	 *            目标图像地址
 	 */
-	public final static void convert(String srcImageFile, String formatName,
+	public final void convert(String srcImageFile, String formatName,
 			String destImageFile) {
 		try {
 			File f = new File(srcImageFile);
@@ -517,7 +544,7 @@ public class ImageUtils {
 	 * @param destImageFile
 	 *            目标图像地址
 	 */
-	public final static void gray(String srcImageFile, String destImageFile, String formatName) {
+	public final void gray(String srcImageFile, String destImageFile, String formatName) {
 		try {
 			BufferedImage src = ImageIO.read(new File(srcImageFile));
 			ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
@@ -553,7 +580,7 @@ public class ImageUtils {
 	 * @param alpha
 	 *            透明度：alpha 必须是范围 [0.0, 1.0] 之内（包含边界值）的一个浮点数字
 	 */
-	public final static void pressText(String pressText, String srcImageFile,
+	public final void pressText(String pressText, String srcImageFile,
 			String destImageFile, String fontName, int fontStyle, Color color,
 			int fontSize, int x, int y, float alpha, String formatName) {
 		try {
@@ -604,7 +631,7 @@ public class ImageUtils {
 	 * @param alpha
 	 *            透明度：alpha 必须是范围 [0.0, 1.0] 之内（包含边界值）的一个浮点数字
 	 */
-	public final static void pressText2(String pressText, String srcImageFile,
+	public final void pressText2(String pressText, String srcImageFile,
 			String destImageFile, String fontName, int fontStyle, Color color,
 			int fontSize, int x, int y, float alpha, String formatName) {
 		try {
@@ -647,7 +674,7 @@ public class ImageUtils {
 	 * @param alpha
 	 *            透明度：alpha 必须是范围 [0.0, 1.0] 之内（包含边界值）的一个浮点数字
 	 */
-	public final static void pressImage(String pressImg, String srcImageFile,
+	public final void pressImage(String pressImg, String srcImageFile,
 			String destImageFile, int x, int y, float alpha, String formatName) {
 		try {
 			File img = new File(srcImageFile);
@@ -681,7 +708,7 @@ public class ImageUtils {
 	 * @param text
 	 * @return
 	 */
-	public final static int getLength(String text) {
+	public final int getLength(String text) {
 		int length = 0;
 		for (int i = 0; i < text.length(); i++) {
 			if (new String(text.charAt(i) + "").getBytes().length > 1) {
