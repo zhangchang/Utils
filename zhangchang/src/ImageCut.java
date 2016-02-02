@@ -9,8 +9,8 @@ public class ImageCut implements Runnable{
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
-		String srcPath = "F:\\电子书\\处理中";
-		String tagPath = "F:\\电子书\\测试";
+		String srcPath = "F:\\电子书\\已完成";
+		String tagPath = "F:\\电子书\\处理中";
 		
 		String srcFolder = "";
 		String tagFolder = "";
