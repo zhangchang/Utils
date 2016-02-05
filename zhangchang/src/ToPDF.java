@@ -8,7 +8,7 @@ import com.itextpdf.text.DocumentException;
 public class ToPDF {
 	public static void main(String[] args) throws MalformedURLException, IOException, DocumentException {
 		// TODO Auto-generated method stub
-		String rootPath = "F:\\电子书\\测试";
+		String rootPath = "D:\\电子书\\已完成";
 		
 		File root = new File(rootPath);
 		File[] files = root.listFiles();
