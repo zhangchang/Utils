@@ -120,7 +120,7 @@ class DownloadHalper extends Observable implements Runnable {
 			}
 
 			// Check for valid content length.
-			long contentLength = connection.getContentLengthLong();
+			long contentLength = connection.getContentLength();
 			if (contentLength < 1) {
 				error();
 			}
