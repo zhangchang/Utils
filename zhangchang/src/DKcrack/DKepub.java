@@ -14,11 +14,17 @@ public class DKepub {
 	public static String dkHost = "http://www.duokan.com";
 	public static String epubUrlBase = "/store/v0/android/book/check_update";
 	public static String localPath = "E:/DEV/DKepub";
+	public static String sqlitDbPath = "E:/DEV/Bookshelf.db";
 
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		String epubFileUrl = getEpubDownloadUrlFromBookId("7d02cabc36ad46d2a6d8288e04c2d1e3");
-		System.out.println(epubFileUrl);
+		String book_id = "ec7d69a63abc11e2b91500163e0123ac";
+		String epubFileUrl = getEpubDownloadUrlFromBookId(book_id);
+		JSONObject json = getEpubInfoFromBookId(book_id);
+		System.out.println(getEpubDownloadUrl(json));
+		System.out.println(getEpubTitle(json));
+		System.out.println(getEpubRevision(json));
+		//downloadEpubFromUrl(epubFileUrl,localPath,book_id+".epub");
 	}
 
 	public static String getEpubDownloadUrlFromBookId(String bookid) throws Exception {
@@ -33,23 +39,39 @@ public class DKepub {
 		return epubUrl;
 	}
 	
-	public static void downloadEpubFromUrl(String url,String localFileName) throws Exception {
-		URL restURL = new URL(url);
-		HttpURLConnection conn = (HttpURLConnection) restURL.openConnection();
-		conn.setRequestMethod("GET");
-		conn.setDoOutput(true);
-		conn.setAllowUserInteraction(false);
-		//PrintStream ps = new PrintStream(conn.getOutputStream());
-		//ps.print(query);
-		//ps.close();
-		BufferedReader bReader = new BufferedReader(new InputStreamReader(
-				conn.getInputStream()));
-		String line, resultStr = "";
-		while (null != (line = bReader.readLine())) {
-			resultStr += line;
-		}
-		bReader.close();
-		//return resultStr;
+	public static String getEpubDownloadUrl(JSONObject jsonObj) throws Exception {
+
+		jsonObj.getJSONArray("items");
+		String epubUrl = jsonObj.getJSONArray("items").getJSONObject(0).getString("epub");
+		return epubUrl;
+	}
+	
+	public static String getEpubTitle(JSONObject jsonObj) throws Exception {
+
+		jsonObj.getJSONArray("items");
+		String epubTitle = jsonObj.getJSONArray("items").getJSONObject(0).getString("title");
+		return epubTitle;
+	}
+	
+	public static String getEpubRevision(JSONObject jsonObj) throws Exception {
+
+		jsonObj.getJSONArray("items");
+		String epubRevision = jsonObj.getJSONArray("items").getJSONObject(0).getString("revision");
+		return epubRevision;
+	}
+	
+	public static JSONObject getEpubInfoFromBookId(String bookid) throws Exception {
+
+		String param_t = "t=1";
+		String paramStr = param_t + "&" + "book_id=" + bookid;
+		String resultStr = request(dkHost+epubUrlBase,paramStr);
+		
+		return getJSONFromString(resultStr);
+	}
+	
+	public static void downloadEpubFromUrl(String url,String localPath, String localFileName) throws Exception {
+		DownloadHelper down = new DownloadHelper(new URL(url),localPath,localFileName);
+		down.run();
 	}
 
 	public static String request(String url, String query) throws Exception {

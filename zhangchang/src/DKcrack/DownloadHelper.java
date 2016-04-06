@@ -5,7 +5,7 @@ import java.net.*;
 import java.util.*;
 
 // This class downloads a file from a URL.
-class DownloadHalper extends Observable implements Runnable {
+class DownloadHelper extends Observable implements Runnable {
 
 	// Max size of download buffer.
 	private static final int MAX_BUFFER_SIZE = 10240;
@@ -30,8 +30,20 @@ class DownloadHalper extends Observable implements Runnable {
 	private String localfilename;
 
 	// Constructor for DownloadHalper.
-	public DownloadHalper(URL url) {
+	public DownloadHelper(URL url) {
 		this.url = url;
+		size = -1;
+		downloaded = 0;
+		status = DOWNLOADING;
+
+		// Begin the download.
+		//download();
+	}
+	
+	public DownloadHelper(URL url, String localPath, String localFilename) {
+		this.url = url;
+		this.path = new File(localPath);
+		this.localfilename = localFilename;
 		size = -1;
 		downloaded = 0;
 		status = DOWNLOADING;
@@ -217,7 +229,7 @@ class DownloadHalper extends Observable implements Runnable {
 
 	public static void main(String args[]) {
 		try {
-			DownloadHalper d = new DownloadHalper(new URL("http://book.read.duokan.com/mfsv2/download/s010/Hp01Lxj9ftuF/msuqW284g989n.epub"));
+			DownloadHelper d = new DownloadHelper(new URL("http://book.read.duokan.com/mfsv2/download/s010/Hp01Lxj9ftuF/msuqW284g989n.epub"));
 			//DownloadHalper d = new DownloadHalper(new URL("http://localhost/atlassian-jira.log"));
 			d.setPath("D:/tmp");
 			d.setLocalfilename("7d02cabc36ad46d2a6d8288e04c2d1e3.epub");
