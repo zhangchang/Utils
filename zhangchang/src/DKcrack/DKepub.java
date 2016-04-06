@@ -17,7 +17,8 @@ public class DKepub {
 
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		getEpubDownloadUrlFromBookId("74359f8c2cbd45a5a825beffeaf0a172");
+		String epubFileUrl = getEpubDownloadUrlFromBookId("7d02cabc36ad46d2a6d8288e04c2d1e3");
+		System.out.println(epubFileUrl);
 	}
 
 	public static String getEpubDownloadUrlFromBookId(String bookid) throws Exception {
