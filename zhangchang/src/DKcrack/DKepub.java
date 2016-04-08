@@ -18,13 +18,13 @@ public class DKepub {
 
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		String book_id = "ec7d69a63abc11e2b91500163e0123ac";
+		String book_id = "c6e1f06ffae84b01b6dee0de6cd99f8b";
 		String epubFileUrl = getEpubDownloadUrlFromBookId(book_id);
 		JSONObject json = getEpubInfoFromBookId(book_id);
 		System.out.println(getEpubDownloadUrl(json));
 		System.out.println(getEpubTitle(json));
 		System.out.println(getEpubRevision(json));
-		//downloadEpubFromUrl(epubFileUrl,localPath,book_id+".epub");
+		//downloadEpubFromUrl(epubFileUrl,localPath,book_id+"."+getEpubRevision(json)+".epub");
 	}
 
 	public static String getEpubDownloadUrlFromBookId(String bookid) throws Exception {
