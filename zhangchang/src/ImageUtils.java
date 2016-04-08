@@ -13,10 +13,11 @@ import java.awt.image.ColorConvertOp;
 import java.awt.image.CropImageFilter;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
+import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
@@ -34,17 +35,30 @@ public class ImageUtils {
 	public static String IMAGE_TYPE_PNG = "png";// 可移植网络图形
 	public static String IMAGE_TYPE_PSD = "psd";// Photoshop的专用格式Photoshop
 	
-	static ArrayList<String> fileList = new ArrayList<String>();
+	
+	
+	public String srcPath;
+	public String tagPath;
 	
 	static int DEFAULT_WIDTH = 720;
 	static int DEFAULT_HEIGHT = 1280;
+	
+	public ImageUtils() {
+		;
+	}
+	
+	public ImageUtils(String srcDir,String tarDir) {
+		srcPath = srcDir;
+		tagPath = tarDir;
+	}
 
 	/**
 	 * 程序入口：用于测试
 	 * 
 	 * @param args
+	 * @throws Exception 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		
 		/*
 		// 1-缩放图像：
@@ -81,31 +95,89 @@ public class ImageUtils {
 				
 		*/
 		
-		if (args.length == 4) {
-			Integer w = new Integer(args[2]);
-			Integer h = new Integer(args[3]);
-			imageBatchCut(args[0], args[1], w.intValue(), h.intValue(), IMAGE_TYPE_PNG);
-		} else {
-			imageBatchCut(args[0], args[1], DEFAULT_WIDTH, DEFAULT_HEIGHT, IMAGE_TYPE_PNG);
-		}
+//		if (args.length == 4) {
+//			Integer w = new Integer(args[2]);
+//			Integer h = new Integer(args[3]);
+//			imageBatchCut(args[0], args[1], w.intValue(), h.intValue(), IMAGE_TYPE_PNG);
+//		} else {
+//			imageBatchCut(args[0], args[1], IMAGE_TYPE_PNG);
+//		}
 		
+//		String srcPath = "D:\\电子书\\处理中";
+//		String tagPath = "D:\\电子书\\已完成";
+
+		compressImage("C:/Users/Public/Documents/screenshot_5.png","C:/Users/Public/Documents/s_screenshot_1.png");
 		
 	}
 	
-	public static void imageBatchCut(String srcFolder, String targetFolder, int width, int height, String formatName) {
+	public void imageFolderAutoCut() {
 		
-		getFiles(srcFolder);
+		String srcFolder = "";
+		String tagFolder = "";
 		
+		File root = new File(srcPath);
+		File newDir = null;
+		File[] files = root.listFiles();
+		
+		for(File file:files) {
+			if(file.isDirectory()){
+				srcFolder = srcPath + "\\" +file.getName();
+				tagFolder = tagPath + "\\" +file.getName();
+				newDir = new File(tagFolder);
+				newDir.mkdirs();
+				System.out.println(srcFolder);
+				System.out.println(tagFolder);
+				imageBatchCut(srcFolder, tagFolder, IMAGE_TYPE_PNG);
+			}
+			
+		}
+	}
+	
+	public void imageAutoCut() {
+		imageBatchCut(srcPath, tagPath, IMAGE_TYPE_PNG);
+	}
+	
+	public void imageBatchCut(String srcFolder, String targetFolder, int width, int height, String formatName) {
+		ArrayList<String> fileList = getFiles(srcFolder);
+		//getFiles(srcFolder);
+		//sortFileList();
 		for (String imgFile : fileList) {
 			
 			String targetImgFileName = targetFolder + "\\" + imgFile.substring(imgFile.lastIndexOf("\\")+1);
 			//System.out.println(targetImgFileName);
 			ImageUtils.cut(imgFile, targetImgFileName, 0, 0, width, height, formatName);
+//			try {
+//				ImageUtils.compressImage(imgFile, targetImgFileName);
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 		}
 	}
 	
-	public static void getFiles(String folder) {
+	public void imageBatchCut(String srcFolder, String targetFolder, String formatName) {
+		ArrayList<String> fileList = getFiles(srcFolder);
+		//getFiles(srcFolder);
+		String firstImg = fileList.get(0);
+		fileList = new ArrayList<String>();
+		
+		BufferedImage src;
+		try {
+			src = ImageIO.read(new File(firstImg));
+			int width = src.getWidth(); // 得到源图宽
+			int height = src.getHeight() - 48; // 得到源图长
+			
+			imageBatchCut(srcFolder, targetFolder, width, height, formatName);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
+	}
+	
+	public ArrayList<String> getFiles(String folder) {
+
+		ArrayList<String> fileList = new ArrayList<String>();
 		
 		File root = new File(folder);
 		File[] files = root.listFiles();
@@ -119,6 +191,40 @@ public class ImageUtils {
 				//System.out.println(file.getAbsolutePath());
 			}
 		}
+		
+		return fileList;
+		
+	}
+	
+	public ArrayList<String> sortFileList(String folder) {
+		
+		ArrayList<String> fileList = getFiles(folder);
+		
+		String prefix = "screenshot_";
+		HashMap<Integer, String> mp = new HashMap<Integer, String>();
+		ArrayList<String> tmpFileList = new ArrayList<String>();
+		Integer maxKey = new Integer(0);
+		Integer tmpKey = new Integer(0);
+		int strLen = 0;
+		
+		for (String tmp: fileList) {
+			strLen = tmp.substring(tmp.indexOf(prefix)+prefix.length()).length();
+			tmpKey = new Integer(tmp.substring(tmp.indexOf(prefix)+prefix.length()).substring(0, strLen-4));
+			mp.put(tmpKey, tmp);
+			if (tmpKey.compareTo(maxKey)>0) {
+				maxKey = new Integer(tmpKey);
+			}
+		}
+		
+		for (int i = 0;i<maxKey.intValue();i++) {
+			if (mp.containsKey(new Integer(i+1))) {
+				tmpFileList.add(mp.get(new Integer(i+1)));
+			}
+		}
+		
+		fileList = tmpFileList;
+		
+		return fileList;
 		
 	}
 
@@ -134,7 +240,7 @@ public class ImageUtils {
 	 * @param flag
 	 *            缩放选择:true 放大; false 缩小;
 	 */
-	public final static void scale(String srcImageFile, String result,
+	public final void scale(String srcImageFile, String result,
 			int scale, boolean flag, String formatName) {
 		try {
 			BufferedImage src = ImageIO.read(new File(srcImageFile)); // 读入文件
@@ -175,7 +281,7 @@ public class ImageUtils {
 	 *            比例不对时是否需要补白：true为补白; false为不补白;
 	 */
 	@SuppressWarnings("static-access")
-	public final static void scale2(String srcImageFile, String result,
+	public final void scale2(String srcImageFile, String result,
 			int height, int width, boolean bb, String formatName ) {
 		try {
 			double ratio = 0.0; // 缩放比例
@@ -247,24 +353,36 @@ public class ImageUtils {
 			int srcWidth = bi.getWidth(); // 源图宽度
 			int srcHeight = bi.getHeight(); // 源图高度
 			if (srcWidth > 0 && srcHeight > 0) {
-				Image image = bi.getScaledInstance(srcWidth, srcHeight,
-						Image.SCALE_FAST);
+				
+				Image image = bi.getScaledInstance(srcWidth, srcHeight,Image.SCALE_FAST);
 				// 四个参数分别为图像起点坐标和宽高
 				// 即: CropImageFilter(int x,int y,int width,int height)
-				ImageFilter cropFilter = new CropImageFilter(x, y, width,
-						height);// 用于裁剪图像的 ImageFilter 类。此类扩展了基本 ImageFilter
-								// 类，可提取现有 Image 中的给定矩形区域，为包含刚提取区域的新图像提供源。也就是它要与
-								// FilteredImageSource 对象结合使用，以生成现有图像的裁剪版本。
-				Image img = Toolkit.getDefaultToolkit().createImage(
-						new FilteredImageSource(image.getSource(), cropFilter));
-				BufferedImage tag = new BufferedImage(width, height,
-						BufferedImage.TYPE_INT_RGB);
+				ImageFilter cropFilter = new CropImageFilter(x, y, width, height);
+
+				// 用于裁剪图像的 ImageFilter 类。此类扩展了基本 ImageFilter
+				// 类，可提取现有 Image 中的给定矩形区域，为包含刚提取区域的新图像提供源。也就是它要与
+				// FilteredImageSource 对象结合使用，以生成现有图像的裁剪版本。
+				Image img = Toolkit.getDefaultToolkit().createImage(new FilteredImageSource(image.getSource(), cropFilter));
+				BufferedImage tag = new BufferedImage(width, height,BufferedImage.TYPE_INT_RGB);
+				
+				
+				tag = getConvertedImage(tag);
+				
+				
 				Graphics g = tag.getGraphics();
 				g.drawImage(img, 0, 0, width, height, null); // 绘制切割后的图
 				//g.drawImage(img, 0, 0, srcWidth, srcHeight, null); // 绘制切割后的图
 				g.dispose();
 				// 输出为文件
 				ImageIO.write(tag, formatName, new File(result));
+				
+				
+				/*
+				//-----------------new-----------------//
+				Image newImg = bi.getSubimage(0, 0, width, height);
+				ImageIO.write((RenderedImage) newImg, IMAGE_TYPE_PNG, new File(result));
+				//-----------------new-----------------//
+				*/
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -283,7 +401,7 @@ public class ImageUtils {
 	 * @param cols
 	 *            目标切片列数。默认2，必须是范围 [1, 20] 之内
 	 */
-	public final static void cut2(String srcImageFile, String descDir,
+	public final void cut2(String srcImageFile, String descDir,
 			int rows, int cols, String formatName) {
 		try {
 			if (rows <= 0 || rows > 20)
@@ -351,7 +469,7 @@ public class ImageUtils {
 	 * @param destHeight
 	 *            目标切片高度。默认150
 	 */
-	public final static void cut3(String srcImageFile, String descDir,
+	public final void cut3(String srcImageFile, String descDir,
 			int destWidth, int destHeight, String formatName) {
 		try {
 			if (destWidth <= 0)
@@ -417,7 +535,7 @@ public class ImageUtils {
 	 * @param destImageFile
 	 *            目标图像地址
 	 */
-	public final static void convert(String srcImageFile, String formatName,
+	public final void convert(String srcImageFile, String formatName,
 			String destImageFile) {
 		try {
 			File f = new File(srcImageFile);
@@ -438,7 +556,7 @@ public class ImageUtils {
 	 * @param destImageFile
 	 *            目标图像地址
 	 */
-	public final static void gray(String srcImageFile, String destImageFile, String formatName) {
+	public final void gray(String srcImageFile, String destImageFile, String formatName) {
 		try {
 			BufferedImage src = ImageIO.read(new File(srcImageFile));
 			ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
@@ -474,7 +592,7 @@ public class ImageUtils {
 	 * @param alpha
 	 *            透明度：alpha 必须是范围 [0.0, 1.0] 之内（包含边界值）的一个浮点数字
 	 */
-	public final static void pressText(String pressText, String srcImageFile,
+	public final void pressText(String pressText, String srcImageFile,
 			String destImageFile, String fontName, int fontStyle, Color color,
 			int fontSize, int x, int y, float alpha, String formatName) {
 		try {
@@ -525,7 +643,7 @@ public class ImageUtils {
 	 * @param alpha
 	 *            透明度：alpha 必须是范围 [0.0, 1.0] 之内（包含边界值）的一个浮点数字
 	 */
-	public final static void pressText2(String pressText, String srcImageFile,
+	public final void pressText2(String pressText, String srcImageFile,
 			String destImageFile, String fontName, int fontStyle, Color color,
 			int fontSize, int x, int y, float alpha, String formatName) {
 		try {
@@ -568,7 +686,7 @@ public class ImageUtils {
 	 * @param alpha
 	 *            透明度：alpha 必须是范围 [0.0, 1.0] 之内（包含边界值）的一个浮点数字
 	 */
-	public final static void pressImage(String pressImg, String srcImageFile,
+	public final void pressImage(String pressImg, String srcImageFile,
 			String destImageFile, int x, int y, float alpha, String formatName) {
 		try {
 			File img = new File(srcImageFile);
@@ -602,7 +720,7 @@ public class ImageUtils {
 	 * @param text
 	 * @return
 	 */
-	public final static int getLength(String text) {
+	public final int getLength(String text) {
 		int length = 0;
 		for (int i = 0; i < text.length(); i++) {
 			if (new String(text.charAt(i) + "").getBytes().length > 1) {
@@ -612,5 +730,55 @@ public class ImageUtils {
 			}
 		}
 		return length / 2;
+	}
+	
+    /** 
+     * 将背景为黑色不透明的图片转化为背景透明的图片 
+     * @param image 背景为黑色不透明的图片（用555格式转化后的都是黑色不透明的） 
+     * @return 转化后的图片 
+     */  
+	public static BufferedImage getConvertedImage(BufferedImage image){  
+        int width=image.getWidth();  
+        int height=image.getHeight();  
+        BufferedImage convertedImage=null;  
+        Graphics2D g2D=null;  
+        //采用带1 字节alpha的TYPE_4BYTE_ABGR，可以修改像素的布尔透明  
+        convertedImage=new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);  
+        g2D = (Graphics2D) convertedImage.getGraphics();  
+        g2D.drawImage(image, 0, 0, null);  
+        //像素替换，直接把背景颜色的像素替换成0  
+        for(int i=0;i<width;i++){  
+            for(int j=0;j<height;j++){  
+                int rgb=convertedImage.getRGB(i, j);  
+                if(isBackPixel(rgb)){  
+                    convertedImage.setRGB(i, j,0);  
+                }  
+            }  
+        }  
+        g2D.drawImage(convertedImage, 0, 0, null);  
+        return convertedImage;  
+    }  
+    
+    /** 
+     * 判断当前像素是否为黑色不透明的像素（-16777216） 
+     * @param pixel 要判断的像素 
+     * @return 是背景像素返回true，否则返回false 
+     */  
+	public static boolean isBackPixel(int pixel){  
+        int back[]={-1,-2,-3};  
+        for(int i=0;i<back.length;i++){  
+            if(back[i]==pixel) return true;  
+        }  
+        return false;  
+    } 
+	
+	public static void compressImage(String srcImageFile, String tagImageFile) throws Exception {
+		
+		BufferedImage bi = ImageIO.read(new File(srcImageFile));
+		BufferedImage bo = getConvertedImage(bi);
+		//Graphics g = bo.getGraphics();
+		//g.drawImage(image, 0, 0, null); // 绘制缩小后的图
+		//g.dispose();// 释放此图形的上下文并释放它所使用的所有系统资源
+		ImageIO.write(bo, IMAGE_TYPE_PNG, new File(tagImageFile));
 	}
 }
