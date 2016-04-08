@@ -56,8 +56,9 @@ public class ImageUtils {
 	 * 程序入口：用于测试
 	 * 
 	 * @param args
+	 * @throws Exception 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		
 		/*
 		// 1-缩放图像：
@@ -105,7 +106,7 @@ public class ImageUtils {
 //		String srcPath = "D:\\电子书\\处理中";
 //		String tagPath = "D:\\电子书\\已完成";
 
-		
+		compressImage("C:/Users/Public/Documents/screenshot_5.png","C:/Users/Public/Documents/s_screenshot_1.png");
 		
 	}
 	
@@ -145,6 +146,12 @@ public class ImageUtils {
 			String targetImgFileName = targetFolder + "\\" + imgFile.substring(imgFile.lastIndexOf("\\")+1);
 			//System.out.println(targetImgFileName);
 			ImageUtils.cut(imgFile, targetImgFileName, 0, 0, width, height, formatName);
+//			try {
+//				ImageUtils.compressImage(imgFile, targetImgFileName);
+//			} catch (Exception e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 		}
 	}
 	
@@ -357,6 +364,11 @@ public class ImageUtils {
 				// FilteredImageSource 对象结合使用，以生成现有图像的裁剪版本。
 				Image img = Toolkit.getDefaultToolkit().createImage(new FilteredImageSource(image.getSource(), cropFilter));
 				BufferedImage tag = new BufferedImage(width, height,BufferedImage.TYPE_INT_RGB);
+				
+				
+				tag = getConvertedImage(tag);
+				
+				
 				Graphics g = tag.getGraphics();
 				g.drawImage(img, 0, 0, width, height, null); // 绘制切割后的图
 				//g.drawImage(img, 0, 0, srcWidth, srcHeight, null); // 绘制切割后的图
@@ -718,5 +730,55 @@ public class ImageUtils {
 			}
 		}
 		return length / 2;
+	}
+	
+    /** 
+     * 将背景为黑色不透明的图片转化为背景透明的图片 
+     * @param image 背景为黑色不透明的图片（用555格式转化后的都是黑色不透明的） 
+     * @return 转化后的图片 
+     */  
+	public static BufferedImage getConvertedImage(BufferedImage image){  
+        int width=image.getWidth();  
+        int height=image.getHeight();  
+        BufferedImage convertedImage=null;  
+        Graphics2D g2D=null;  
+        //采用带1 字节alpha的TYPE_4BYTE_ABGR，可以修改像素的布尔透明  
+        convertedImage=new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);  
+        g2D = (Graphics2D) convertedImage.getGraphics();  
+        g2D.drawImage(image, 0, 0, null);  
+        //像素替换，直接把背景颜色的像素替换成0  
+        for(int i=0;i<width;i++){  
+            for(int j=0;j<height;j++){  
+                int rgb=convertedImage.getRGB(i, j);  
+                if(isBackPixel(rgb)){  
+                    convertedImage.setRGB(i, j,0);  
+                }  
+            }  
+        }  
+        g2D.drawImage(convertedImage, 0, 0, null);  
+        return convertedImage;  
+    }  
+    
+    /** 
+     * 判断当前像素是否为黑色不透明的像素（-16777216） 
+     * @param pixel 要判断的像素 
+     * @return 是背景像素返回true，否则返回false 
+     */  
+	public static boolean isBackPixel(int pixel){  
+        int back[]={-1,-2,-3};  
+        for(int i=0;i<back.length;i++){  
+            if(back[i]==pixel) return true;  
+        }  
+        return false;  
+    } 
+	
+	public static void compressImage(String srcImageFile, String tagImageFile) throws Exception {
+		
+		BufferedImage bi = ImageIO.read(new File(srcImageFile));
+		BufferedImage bo = getConvertedImage(bi);
+		//Graphics g = bo.getGraphics();
+		//g.drawImage(image, 0, 0, null); // 绘制缩小后的图
+		//g.dispose();// 释放此图形的上下文并释放它所使用的所有系统资源
+		ImageIO.write(bo, IMAGE_TYPE_PNG, new File(tagImageFile));
 	}
 }
